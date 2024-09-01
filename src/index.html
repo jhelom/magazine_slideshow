@@ -1,0 +1,102 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>MAGAZINE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Graduate&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-size: 36px;
+            font-family: "Graduate", serif;
+            font-weight: bold;
+            font-style: normal;
+            text-shadow: 5px 5px 15px rgba(255, 255, 255, 1.0);
+            overflow: hidden;
+            opacity: 0;
+        }
+
+        img {
+            display: inline-block;
+        }
+
+        #page {
+            z-index: 1;
+            position: absolute;
+            left: 10px;
+            bottom: 120px;
+            white-space: nowrap;
+        }
+
+        main {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 100px;
+            white-space: nowrap;
+            /* overflow-x: scroll; */
+            overflow: visible;
+        }
+
+        main img {
+            height: 100%;
+        }
+
+        footer {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 90px;
+            white-space: nowrap;
+            /* overflow-x: scroll; */
+            overflow: visible;
+        }
+
+        footer img {
+            height: 100%;
+        }
+
+        .fade-in {
+            animation: fadeIn 5s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+
+        .fade-out {
+            animation: fadeOutIn 5s ease-out forwards;
+        }
+
+        @keyframes fadeOutIn {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="fade-in">
+    <div id="page"></div>
+    <main id="main">
+    </main>
+    <footer id="footer">
+    </footer>
+    <script src="main.js"></script>
+</body>
+
+</html>
