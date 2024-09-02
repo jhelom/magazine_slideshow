@@ -4,8 +4,8 @@ const OBS_ADDRESS = '127.0.0.1:4455';
 const OBS_PASSWORD = 'testtest';
 
 class SlideShow {
-    private readonly SCROLL_DURATION = 3000;
-    private readonly SCROLL_WAIT = 1000;
+    private readonly SCROLL_DURATION = 2000;
+    private readonly SCROLL_WAIT = 2000;
 
     private readonly _mainElement: HTMLElement;
     private readonly _footerElement: HTMLElement;
@@ -27,13 +27,13 @@ class SlideShow {
     }
 
     async load() {
+        console.log('LOAD');
         const response = await fetch('data.json');
         let file_list = await response.json();
         // file_list = file_list.slice(0, 10);
         // console.log(file_list);
 
-        for (let i = 0; i < file_list.length; i++) {
-            const file = file_list[i];
+        for (let file of file_list) {
             const img1 = await this.createImage(this._mainElement, file);
             this._imgList1.push(img1);
             const img2 = await this.createImage(this._footerElement, file);
@@ -77,7 +77,9 @@ class SlideShow {
         return keyframes.join('\n')
     }
 
-    async run(): Promise<void> {
+    async execute(): Promise<void> {
+        console.log('EXECUTE');
+
         for (let i = 0; i < this._count; i++) {
             this._mainElement.style.animation = `main${i} ${this.SCROLL_DURATION}ms ease-in-out forwards`;
             this._footerElement.style.animation = `footer${i} ${this.SCROLL_DURATION}ms ease-in-out forwards`;
@@ -106,7 +108,7 @@ class SlideShow {
     async obsConnect() {
         console.log('OBS', 'CONNECT');
         try {
-            await this._obs.connect(`ws://${OBS_ADDRESS}`);
+            await this._obs.connect(`ws://${OBS_ADDRESS}`, OBS_PASSWORD);
         } catch (e) {
             console.error(e);
         }
@@ -140,15 +142,19 @@ class SlideShow {
     }
 }
 
-(async () => {
-    const slideShow = new SlideShow();
-    await slideShow.load();
-    await slideShow.sleep(13000);
-    // slideShow.obsConnect();
-    // slideShow.obsStartRecording();
-    // slideShow.obsStopRecording();
-    slideShow.run();
-    // slideShow.obsDisconnect();
-})();
+document.addEventListener("DOMContentLoaded", () => {
+    // DOMが読み込まれた後に実行したいコードをここに書きます
+    console.log('INIT');
+    (async () => {
+        const slideShow = new SlideShow();
+        slideShow.obsConnect();
+        await slideShow.load();
+        await slideShow.sleep(13000);
+        slideShow.obsStartRecording();
+        slideShow.execute();
+        // slideShow.obsStopRecording();
+        // slideShow.obsDisconnect();
+    })();
+});
 
 

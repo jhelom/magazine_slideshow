@@ -21,7 +21,7 @@ def get_files(file_list, directory:Path, extension_list):
     return file_list
 
 def main():
-    data_list = get_files([], root_directory, ['.jpg', '.jpg2', '.png', '.webp'])
+    data_list = get_files([], root_directory, ['.jpg', '.jpeg', '.png', '.webp'])
     s = json.dumps(data_list, indent=2)
     with open('dist/data.json', 'w') as f:
         f.write(s)
