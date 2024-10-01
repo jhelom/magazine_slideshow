@@ -1,17 +1,53 @@
 import OBSWebSocket from 'obs-websocket-js';
 
-const OBS_ADDRESS = '127.0.0.1:4455';
-const OBS_PASSWORD = 'testtest';
+const SCROLL_DURATION = 2000;
+const SCROLL_WAIT = 2000;
+
+class OBS {
+    private obs: OBSWebSocket;
+    public readonly isEnabled: boolean;
+
+    constructor(isEnabled: boolean) {
+        this.obs = new OBSWebSocket();
+        this.isEnabled = isEnabled;
+    }
+
+    async connect(): Promise<void> {
+        if (this.isEnabled) {
+            console.log('OBS', 'CONNECT')
+            await this.obs.connect('ws://localhost:4455');
+        }
+    }
+
+    async start(): Promise<void> {
+        if (this.isEnabled) {
+            console.log('OBS', 'START')
+            await this.obs.call('StartRecord');
+        }
+    }
+
+    async stop(): Promise<void> {
+        if (this.isEnabled) {
+            console.log('OBS', 'STOP')
+            await this.obs.call('StopRecord');
+        }
+    }
+}
+
+const params = new URLSearchParams(window.location.search);
+const obs = new OBS(params.has('obs'));
+
+function sleep(ms: number) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 class SlideShow {
-    private readonly SCROLL_DURATION = 2000;
-    private readonly SCROLL_WAIT = 2000;
-
     private readonly _mainElement: HTMLElement;
     private readonly _footerElement: HTMLElement;
     private readonly _pageElement: HTMLElement;
     private readonly _styleElement: HTMLStyleElement;
-    private readonly _obs: OBSWebSocket;
 
     private _count = 0;
     private _imgList1: Array<HTMLImageElement> = [];
@@ -23,7 +59,6 @@ class SlideShow {
         this._pageElement = document.getElementById('page')!;
         this._styleElement = document.createElement('style');
         document.head.appendChild(this._styleElement);
-        this._obs = new OBSWebSocket();
     }
 
     async load() {
@@ -51,10 +86,10 @@ class SlideShow {
         return new Promise((resolve, reject) => {
             const img = document.createElement('img');
             img.src = `img/${src}`;
-            img.style.opacity = '0';
+            // img.style.opacity = '0';
             img.addEventListener('load', () => {
                 parent.appendChild(img);
-                img.classList.add('fade-in');
+                // img.classList.add('fade-in');
                 img.style.width = `${img.width}px`;
                 img.style.height = `${img.height}px`;
                 resolve(img);
@@ -63,7 +98,7 @@ class SlideShow {
     }
 
     buildKeyframes(imgList: Array<HTMLImageElement>, name: string): string {
-        const keyframes = [];
+        const keyframes: Array<string> = [];
         let x1 = 0;
         let x2 = 0;
 
@@ -81,80 +116,41 @@ class SlideShow {
         console.log('EXECUTE');
 
         for (let i = 0; i < this._count; i++) {
-            this._mainElement.style.animation = `main${i} ${this.SCROLL_DURATION}ms ease-in-out forwards`;
-            this._footerElement.style.animation = `footer${i} ${this.SCROLL_DURATION}ms ease-in-out forwards`;
-            await this.sleep(this.SCROLL_DURATION);
+            this._mainElement.style.animation = `main${i} ${SCROLL_DURATION}ms ease-in-out forwards`;
+            this._footerElement.style.animation = `footer${i} ${SCROLL_DURATION}ms ease-in-out forwards`;
+            await sleep(SCROLL_DURATION);
 
             this.updatePage(i);
             // const ii = Math.max(0, i - 1);
             // this._imgList1[ii].style.display = 'hidden';
             // this._imgList2[ii].style.display = 'hidden';
-            await this.sleep(this.SCROLL_WAIT);
+            await sleep(SCROLL_WAIT);
         }
 
         document.body.classList.add('fade-out');
-        await this.sleep(5);
+        await sleep(5000);
     }
 
     updatePage(i: number): void {
         this._pageElement.textContent = `${(i + 1)}/${this._count}`;
     }
-
-    sleep(ms: number): Promise<void> {
-        // console.log('SLEEP');
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async obsConnect() {
-        console.log('OBS', 'CONNECT');
-        try {
-            await this._obs.connect(`ws://${OBS_ADDRESS}`, OBS_PASSWORD);
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async obsDisconnect() {
-        console.log('OBS', 'DISCONNECT');
-        try {
-            await this._obs.disconnect();
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async obsStartRecording() {
-        console.log('OBS', 'START');
-        try {
-            await this._obs.call('StartRecording')
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    async obsStopRecording() {
-        console.log('OBS', 'STOP');
-        try {
-            await this._obs.call('StopRecording')
-        } catch (e) {
-            console.error(e);
-        }
-    }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+window.onload = async () => {
     // DOMが読み込まれた後に実行したいコードをここに書きます
     console.log('INIT');
-    (async () => {
-        const slideShow = new SlideShow();
-        slideShow.obsConnect();
-        await slideShow.load();
-        await slideShow.sleep(13000);
-        slideShow.obsStartRecording();
-        slideShow.execute();
-        // slideShow.obsStopRecording();
-        // slideShow.obsDisconnect();
-    })();
-});
+    obs.connect();
+    obs.start();
 
+    setTimeout(() => {
+        const audio = document.getElementById('audio') as HTMLAudioElement;
+        audio.play();
+    }, 1000); // 3秒のディレイ
 
+    const slideShow = new SlideShow();
+    await slideShow.load();
+    await sleep(1000 * 12);
+    await slideShow.execute();
+    await sleep(1000 * 15);
+    obs.stop();
+};

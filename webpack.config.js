@@ -28,6 +28,7 @@ module.exports = {
                 test: /\.ts$/,
                 // TypeScript をコンパイルする
                 use: 'ts-loader',
+                exclude: [/node_modules/],
             },
         ],
     },

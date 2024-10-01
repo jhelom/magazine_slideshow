@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "noImplicitAny": false,
         // ソースマップを有効化
         "sourceMap": true,
         // TSはECMAScript 5に変換
@@ -11,6 +12,9 @@
         "lib": [
             "ES2023",
             "DOM"
-        ]
+        ],
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true
     }
 }
